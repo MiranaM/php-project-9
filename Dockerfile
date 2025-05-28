@@ -1,20 +1,16 @@
 FROM php:8.1-cli
 
-# Устанавливаем зависимости и Composer
-RUN apt-get update && apt-get install -y unzip curl git \
-    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+RUN apt-get update && apt-get install -y libzip-dev libpq-dev
+RUN docker-php-ext-install zip pdo pdo_pgsql
 
-# Установка рабочей директории
+RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
+    && php composer-setup.php --install-dir=/usr/local/bin --filename=composer \
+    && php -r "unlink('composer-setup.php');"
+
 WORKDIR /app
 
-# Копируем всё в контейнер
 COPY . .
 
-# Устанавливаем зависимости
 RUN composer install
 
-# Порт, на котором работает приложение
-EXPOSE 8000
-
-# Команда запуска (тот же Makefile start)
-CMD ["make", "start"]
+CMD ["bash", "-c", "make start"]
