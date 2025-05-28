@@ -1,0 +1,11 @@
+<?php
+$title = 'Главная';
+ob_start();
+?>
+
+<h1 class="text-center">Добро пожаловать!</h1>
+<p class="text-center text-muted">Это стартовая страница на Slim + Bootstrap</p>
+
+<?php
+$content = ob_get_clean();
+include __DIR__ . '/layouts/public.phtml';
