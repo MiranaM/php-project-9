@@ -1,22 +1,21 @@
-FROM php:8.1-cli
+FROM php:8.2-cli
 
-# Установка зависимостей PHP
-RUN apt-get update && apt-get install -y libzip-dev libpq-dev
-RUN docker-php-ext-install zip pdo pdo_pgsql
-
-# Установка Composer
-RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
-    && php composer-setup.php --install-dir=/usr/local/bin --filename=composer \
-    && php -r "unlink('composer-setup.php');"
-
-# Разрешаем composer работать от root
-ENV COMPOSER_ALLOW_SUPERUSER=1
+# Установка зависимостей системы
+RUN apt-get update && apt-get install -y git unzip zip && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-COPY . .
 
-# Устанавливаем PHP-зависимости
+# Копируем только composer.json и composer.lock для более быстрой сборки
+COPY composer.json composer.lock* ./
+
+# Установка composer
+RUN curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer
+
+# Установка зависимостей
 RUN composer install --no-interaction --prefer-dist --ignore-platform-reqs
 
-# Запуск проекта через make start
+# Копируем оставшиеся файлы проекта
+COPY . .
+
+# Команда запуска
 CMD ["make", "start"]
