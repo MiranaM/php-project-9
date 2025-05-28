@@ -7,4 +7,4 @@
 
 ## Демо
 
-[Посмотреть демо на Render.com](https://php-project-9-86jt.onrender.com)
+[Посмотреть демо на Render.com](https://php-project-9-wwre.onrender.com)
