@@ -9,19 +9,19 @@ ob_start();
     <?php unset($_SESSION['flash']); ?>
 <?php endif; ?>
 
-<?php $errors = $_SESSION['errors'] ?? []; unset($_SESSION['errors']); ?>
+<?php $errors = $_SESSION['errors']['url'] ?? []; unset($_SESSION['errors']); ?>
 <form method="post" action="/urls" class="mt-3">
     <div class="mb-3">
         <input type="text" name="url[name]" value="<?= $_SESSION['old']['name'] ?? '' ?>" class="form-control" placeholder="https://example.com">
-        <?php if (!empty($errors['name'])): ?>
-            <div class="text-danger"><?= implode(', ', $errors['name']) ?></div>
+        <?php if (!empty($errors)): ?>
+            <div class="text-danger"><?= implode(', ', $errors) ?></div>
         <?php endif; ?>
     </div>
     <button type="submit" class="btn btn-primary">Проверить</button>
 </form>
 
+<?php $_SESSION['old'] = []; ?>
 <?php
-$_SESSION['old'] = [];
 $content = ob_get_clean();
 include __DIR__ . '/layout.phtml';
 ?>
