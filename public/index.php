@@ -7,9 +7,6 @@ use Valitron\Validator;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
-$dotenv->load();
-
 session_start();
 
 $container = new Container();
@@ -19,12 +16,15 @@ $container->set('renderer', function () {
 AppFactory::setContainer($container);
 $app = AppFactory::create();
 
-$pdo = null;
-if (isset($_ENV['DATABASE_URL'])) {
-    $db = parse_url($_ENV['DATABASE_URL']);
-    $dsn = "pgsql:host={$db['host']};port={$db['port']};dbname=" . ltrim($db['path'], '/');
-    $pdo = new PDO($dsn, $db['user'], $db['pass']);
+$databaseUrl = getenv('DATABASE_URL');
+
+if ($databaseUrl === false) {
+    throw new Exception("DATABASE_URL не задана");
 }
+
+$db = parse_url($databaseUrl);
+$dsn = "pgsql:host={$db['host']};port={$db['port']};dbname=" . ltrim($db['path'], '/');
+$pdo = new PDO($dsn, $db['user'], $db['pass']);
 
 $app->get('/', function ($request, $response) {
     return $this->get('renderer')->render($response, 'home.phtml');
