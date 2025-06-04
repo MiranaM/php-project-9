@@ -23,7 +23,9 @@ if ($databaseUrl === false) {
 }
 
 $db = parse_url($databaseUrl);
-$dsn = "pgsql:host={$db['host']};port={$db['port']};dbname=" . ltrim($db['path'], '/');
+$port = $db['port'] ?? 5432;
+$dsn = "pgsql:host={$db['host']};port={$port};dbname=" . ltrim($db['path'], '/');
+
 $pdo = new PDO($dsn, $db['user'], $db['pass']);
 
 $app->get('/', function ($request, $response) {
