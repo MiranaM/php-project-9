@@ -1,20 +1,36 @@
-<html>
-<head>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="container">
-    <h1 class="mt-5">Список сайтов</h1>
-    <table class="table" data-test="urls">
-        <thead><tr><th>ID</th><th>Имя</th><th>Дата добавления</th></tr></thead>
-        <tbody>
-            <?php foreach ($urls as $url): ?>
-            <tr>
-                <td><?= $url['id'] ?></td>
-                <td><a href="/urls/<?= $url['id'] ?>"><?= $url['name'] ?></a></td>
-                <td><?= $url['created_at'] ?></td>
-            </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
-</body>
-</html>
+<?php
+ob_start();
+?>
+
+<h1 class="mb-4">Сайты</h1>
+
+<?php if (isset($_SESSION['flash'])): ?>
+    <div class="alert alert-info" role="alert">
+        <?= $_SESSION['flash'] ?>
+        <?php unset($_SESSION['flash']); ?>
+    </div>
+<?php endif; ?>
+
+<table class="table table-bordered" data-test="urls">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Сайт</th>
+            <th>Дата последней проверки</th>
+        </tr>
+    </thead>
+    <tbody>
+    <?php foreach ($urls as $url): ?>
+        <tr>
+            <td><?= htmlspecialchars($url['id']) ?></td>
+            <td><a href="/urls/<?= $url['id'] ?>"><?= htmlspecialchars($url['name']) ?></a></td>
+            <td><?= $url['last_check'] ?? '—' ?></td>
+        </tr>
+    <?php endforeach; ?>
+    </tbody>
+</table>
+
+<?php
+$content = ob_get_clean();
+include __DIR__ . '/../layout.phtml';
+?>
