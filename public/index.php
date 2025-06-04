@@ -124,7 +124,10 @@ $app->post('/urls/{id}/checks', function ($request, $response, $args) use ($pdo)
         $res = $client->request('GET', $url);
         $statusCode = $res->getStatusCode();
 
-        $stmt = $pdo->prepare('INSERT INTO url_checks (url_id, status_code, created_at) VALUES (:url_id, :status_code, NOW())');
+        $stmt = $pdo->prepare('
+            INSERT INTO url_checks (url_id, status_code, created_at)
+            VALUES (:url_id, :status_code, NOW())
+        ');
         $stmt->execute([
             'url_id' => $urlId,
             'status_code' => $statusCode
