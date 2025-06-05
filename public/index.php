@@ -10,6 +10,8 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\RequestException;
 use Validators\UrlValidator;
+use DiDom\Document;
+use Illuminate\Support\Optional;
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -88,7 +90,6 @@ $app->post('/urls', function (Request $request, Response $response) use ($pdo) {
         ->withStatus(302);
 });
 
-
 $app->get('/urls', function ($request, $response) use ($pdo) {
     $stmt = $pdo->query('
         SELECT urls.*,
@@ -107,17 +108,12 @@ $app->get('/urls', function ($request, $response) use ($pdo) {
 
 $app->get('/urls/{id}', function ($request, $response, $args) use ($pdo) {
     $id = $args['id'];
-    $stmt = $pdo->prepare('
-        SELECT *
-        FROM urls
-        WHERE id = :id
-    ');
+    $stmt = $pdo->prepare('SELECT * FROM urls WHERE id = :id');
     $stmt->execute(['id' => $id]);
     $url = $stmt->fetch(PDO::FETCH_ASSOC);
 
     $stmt = $pdo->prepare('
-        SELECT *
-        FROM url_checks
+        SELECT * FROM url_checks
         WHERE url_id = :url_id
         ORDER BY created_at DESC
     ');
@@ -132,11 +128,7 @@ $app->get('/urls/{id}', function ($request, $response, $args) use ($pdo) {
 $app->post('/urls/{id}/checks', function ($request, $response, $args) use ($pdo) {
     $urlId = $args['id'];
 
-    $stmt = $pdo->prepare('
-        SELECT name
-        FROM urls
-        WHERE id = :id
-    ');
+    $stmt = $pdo->prepare('SELECT name FROM urls WHERE id = :id');
     $stmt->execute(['id' => $urlId]);
     $url = $stmt->fetchColumn();
 
@@ -150,14 +142,29 @@ $app->post('/urls/{id}/checks', function ($request, $response, $args) use ($pdo)
     try {
         $res = $client->request('GET', $url);
         $statusCode = $res->getStatusCode();
+        $body = $res->getBody()->getContents();
+
+        $document = new Document($body);
+
+        $titleElement = $document->first('title');
+        $title = $titleElement ? $titleElement->text() : null;
+
+        $h1Element = $document->first('h1');
+        $h1 = $h1Element ? $h1Element->text() : null;
+
+        $metaElement = $document->first('meta[name=description]');
+        $description = $metaElement ? $metaElement->getAttribute('content') : null;
 
         $stmt = $pdo->prepare('
-            INSERT INTO url_checks (url_id, status_code, created_at)
-            VALUES (:url_id, :status_code, NOW())
+            INSERT INTO url_checks (url_id, status_code, title, h1, description, created_at)
+            VALUES (:url_id, :status_code, :title, :h1, :description, NOW())
         ');
         $stmt->execute([
             'url_id' => $urlId,
-            'status_code' => $statusCode
+            'status_code' => $statusCode,
+            'title' => $title,
+            'h1' => $h1,
+            'description' => $description
         ]);
 
         $_SESSION['flash'] = "Проверка выполнена. Код ответа: {$statusCode}";
