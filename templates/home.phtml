@@ -19,7 +19,6 @@ ob_start();
         >
 
         <?php if (!empty($errors['name'])): ?>
-            <pre><?php var_dump($errors['name']); ?></pre>
             <div class="invalid-feedback d-block">
                 <?= htmlspecialchars($errors['name'][0]) ?>
             </div>
