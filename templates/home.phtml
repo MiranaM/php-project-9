@@ -17,12 +17,15 @@ ob_start();
             class="form-control<?= !empty($errors['name']) ? ' is-invalid' : '' ?>"
             placeholder="https://example.com"
         >
+
         <?php if (!empty($errors['name'])): ?>
-            <div class="text-danger mt-1">
-                <?= htmlspecialchars(implode(', ', $errors['name'])) ?>
+            <pre><?php var_dump($errors['name']); ?></pre>
+            <div class="invalid-feedback d-block">
+                <?= htmlspecialchars($errors['name'][0]) ?>
             </div>
         <?php endif; ?>
     </div>
+
     <button type="submit" class="btn btn-primary">Проверить</button>
 </form>
 

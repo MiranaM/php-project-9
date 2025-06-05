@@ -54,7 +54,7 @@ $app->post('/urls', function (Request $request, Response $response) use ($pdo) {
     $data = $request->getParsedBody()['url'] ?? [];
     $url = trim($data['name'] ?? '');
 
-    $errors = UrlValidator::validate(['name' => $url]);
+    $errors = UrlValidator::validate(['url' => ['name' => $url]]);
     if (!empty($errors)) {
         $_SESSION['errors'] = $errors;
         $_SESSION['old'] = $data;
