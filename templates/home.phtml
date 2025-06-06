@@ -12,17 +12,11 @@
                 </div>
                 <?php unset($_SESSION['flash']); ?>
             <?php endif ?>
-            <?php if (!empty($errors['name'])): ?>
-                <div class="alert alert-danger" role="alert">
-                    <?= htmlspecialchars($errors['name']) ?>
-                </div>
-            <?php endif ?>
             <?php if (!empty($errors)) : ?>
                 <div class="alert alert-danger" role="alert">
                     <?= $errors['name'] ?>
                 </div>
             <?php endif ?>
-
             <form action="/urls" method="post" class="row">
                 <div class="col-8">
                     <label for="url[name]" class="visually-hidden">Url для проверки</label>

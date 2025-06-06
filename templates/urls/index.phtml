@@ -7,6 +7,11 @@ ob_start();
     </div>
     <?php unset($_SESSION['flash']); ?>
 <?php endif ?>
+<?php if (!empty($errors['name'])): ?>
+    <div class="alert alert-danger" role="alert">
+        <?= htmlspecialchars($errors['name']) ?>
+    </div>
+<?php endif ?>
 <h1 class="mb-4">Сайты</h1>
 <table class="table table-bordered" data-test="urls">
     <thead>
