@@ -144,3 +144,25 @@ $app->post('/urls', function (Request $request, Response $response) {
         ->withHeader('Location', "/urls/{$urlId}")
         ->withStatus(302);
 });
+
+$errorMiddleware = $app->addErrorMiddleware(true, true, true);
+
+$errorMiddleware->setDefaultErrorHandler(function (
+    Psr\Http\Message\ServerRequestInterface $request,
+    Throwable $exception,
+    bool $displayErrorDetails,
+    bool $logErrors,
+    bool $logErrorDetails
+) use ($app) {
+    $response = new Slim\Psr7\Response();
+
+    $statusCode = $exception instanceof HttpNotFoundException ? 404 : 500;
+    $title = $statusCode === 404 ? 'Страница не найдена' : 'Упс что-то пошло не так';
+
+    ob_start();
+    include __DIR__ . '/../templates/error.phtml';
+    $html = ob_get_clean();
+
+    $response->getBody()->write($html);
+    return $response->withStatus($statusCode);
+});
