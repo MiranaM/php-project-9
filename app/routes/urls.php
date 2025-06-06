@@ -76,7 +76,7 @@ $app->post('/urls/{id}/checks', function (Request $request, Response $response, 
             'description' => $description,
         ]);
 
-        $_SESSION['flash'] = "Проверка выполнена. Код ответа: {$statusCode}";
+        $_SESSION['flash'] = "Страница успешно проверена";
     } catch (\Exception $e) {
         $_SESSION['flash'] = 'Ошибка при выполнении проверки';
     }
