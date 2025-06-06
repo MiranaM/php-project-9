@@ -4,30 +4,45 @@ use Slim\Psr7\Response;
 use Slim\Psr7\Request;
 use DiDom\Document;
 use GuzzleHttp\Client;
+use Validators\UrlValidator;
 
 $app->get('/urls/{id}', function (Request $request, Response $response, $args) {
     $pdo = $this->get('pdo');
     $id = $args['id'];
 
-    $stmt = $pdo->prepare('SELECT * FROM urls WHERE id = :id');
+    $stmt = $pdo->prepare('
+        SELECT *
+        FROM urls
+        WHERE id = :id
+    ');
     $stmt->execute(['id' => $id]);
     $url = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    $stmt = $pdo->prepare('SELECT * FROM url_checks WHERE url_id = :url_id ORDER BY created_at DESC');
+    $stmt = $pdo->prepare('
+        SELECT *
+        FROM url_checks
+        WHERE url_id = :url_id
+        ORDER BY created_at DESC
+    ');
     $stmt->execute(['url_id' => $id]);
     $checks = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    return $this->get('renderer')->render($response, 'urls/show.phtml', [
-        'url' => $url,
-        'checks' => $checks,
-    ]);
+    return $this->get('renderer')
+        ->render($response, 'urls/show.phtml', [
+            'url' => $url,
+            'checks' => $checks,
+        ]);
 });
 
 $app->post('/urls/{id}/checks', function (Request $request, Response $response, $args) {
     $pdo = $this->get('pdo');
     $id = $args['id'];
 
-    $stmt = $pdo->prepare('SELECT name FROM urls WHERE id = :id');
+    $stmt = $pdo->prepare('
+        SELECT name
+        FROM urls
+        WHERE id = :id
+    ');
     $stmt->execute(['id' => $id]);
     $url = $stmt->fetchColumn();
 
@@ -86,4 +101,46 @@ $app->get('/urls', function (Request $request, Response $response) {
     return $this->get('renderer')->render($response, 'urls/index.phtml', [
         'urls' => $urls,
     ]);
+});
+
+$app->post('/urls', function (Request $request, Response $response) {
+    $pdo = $this->get('pdo');
+
+    $data = $request->getParsedBody()['url'] ?? [];
+    $url = trim($data['name'] ?? '');
+
+    $errors = UrlValidator::validate(['url' => ['name' => $url]]);
+    if (!empty($errors)) {
+        $_SESSION['errors'] = $errors;
+        $_SESSION['old'] = $data;
+        return $response
+            ->withHeader('Location', '/')
+            ->withStatus(302);
+    }
+
+    $parsed = parse_url($url);
+    $normalizedUrl = "{$parsed['scheme']}://{$parsed['host']}";
+
+    $stmt = $pdo->prepare('
+        SELECT id
+        FROM urls
+        WHERE name = :name
+    ');
+    $stmt->execute(['name' => $normalizedUrl]);
+    $existing = $stmt->fetch();
+
+    if (!$existing) {
+        $stmt = $pdo->prepare('
+            INSERT INTO urls (name, created_at)
+            VALUES (:name, NOW())
+        ');
+        $stmt->execute(['name' => $normalizedUrl]);
+        $_SESSION['flash'] = 'URL успешно добавлен';
+    } else {
+        $_SESSION['flash'] = 'URL уже существует';
+    }
+
+    return $response
+        ->withHeader('Location', '/urls')
+        ->withStatus(302);
 });

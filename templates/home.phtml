@@ -7,16 +7,17 @@
       <p class="text-center text-muted mb-4">Бесплатно проверяйте сайты на SEO пригодность</p>
 
       <form method="post" action="/urls">
-        <div class="input-group input-group-lg">
-          <input
-            type="text"
-            name="url[name]"
-            value="<?= htmlspecialchars($old['name'] ?? '') ?>"
-            class="form-control <?= !empty($errors['name']) ? 'is-invalid' : '' ?>"
-            placeholder="https://www.example.com"
-          >
-          <button class="btn btn-primary" type="submit">ПРОВЕРИТЬ</button>
-        </div>
+      <div class="input-group input-group-lg">
+        <input
+          type="text"
+          name="url[name]"
+          value="<?= htmlspecialchars($old['name'] ?? '') ?>"
+          class="form-control <?= !empty($errors['name']) ? 'is-invalid' : '' ?>"
+          placeholder="https://www.example.com"
+        >
+        <input type="submit" class="btn btn-primary" value="ПРОВЕРИТЬ">
+      </div>
+
 
         <?php if (!empty($errors['name'])): ?>
           <div class="invalid-feedback d-block">
