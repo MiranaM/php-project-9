@@ -1,36 +1,41 @@
 <?php ob_start(); ?>
 
-<div class="container py-5">
-  <div class="row justify-content-center">
-    <div class="col-md-10 col-lg-8">
-      <h1 class="text-center mb-3">Анализатор страниц</h1>
-      <p class="text-center text-muted mb-4">Бесплатно проверяйте сайты на SEO пригодность</p>
+<div class="container-lg mt-3">
+    <div class="row">
+        <div class="col-12 col-md-10 col-lg-8 mx-auto border rounded-3 bg-light p-5">
+            <h1 class="display-3">Анализатор страниц</h1>
+            <p class="lead">Бесплатно проверяйте сайты на SEO пригодность</p>
 
-      <form method="post" action="/urls">
-      <div class="input-group input-group-lg">
-        <input
-          type="text"
-          name="url[name]"
-          value="<?= htmlspecialchars($old['name'] ?? '') ?>"
-          class="form-control <?= !empty($errors['name']) ? 'is-invalid' : '' ?>"
-          placeholder="https://www.example.com"
-        >
-        <input type="submit" class="btn btn-primary" value="ПРОВЕРИТЬ">
-      </div>
+            <?php if (isset($_SESSION['flash'])): ?>
+                <div class="alert alert-success" role="alert">
+                    <?= htmlspecialchars($_SESSION['flash']) ?>
+                </div>
+                <?php unset($_SESSION['flash']); ?>
+            <?php endif ?>
 
+            <?php if (!empty($errors)) : ?>
+                <div class="alert alert-danger" role="alert">
+                    <?= $errors['name'] ?>
+                </div>
+            <?php endif ?>
 
-        <?php if (!empty($errors['name'])): ?>
-          <div class="invalid-feedback d-block">
-            <?= htmlspecialchars($errors['name'][0]) ?>
-          </div>
-        <?php endif; ?>
-
-        <?php if (!empty($flash)): ?>
-          <div class="alert alert-info mt-3"><?= htmlspecialchars($flash) ?></div>
-        <?php endif; ?>
-      </form>
+            <form action="/urls" method="post" class="row">
+                <div class="col-8">
+                    <label for="url[name]" class="visually-hidden">Url для проверки</label>
+                    <input
+                        type="text"
+                        name="url[name]"
+                        value="<?= htmlspecialchars($old['name'] ?? '') ?>"
+                        class="form-control form-control-lg <?= !empty($errors['name']) ? 'is-invalid' : '' ?>"
+                        placeholder="https://www.example.com"
+                    >
+                </div>
+                <div class="col-2">
+                    <input type="submit" class="btn btn-primary btn-lg ms-3 px-5 text-uppercase mx-3" value="Проверить">
+                </div>
+            </form>
+        </div>
     </div>
-  </div>
 </div>
 
 <?php
