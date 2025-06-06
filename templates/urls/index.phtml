@@ -1,16 +1,13 @@
 <?php
 ob_start();
 ?>
-
-<h1 class="mb-4">Сайты</h1>
-
 <?php if (isset($_SESSION['flash'])): ?>
-    <div class="alert alert-info" role="alert">
-        <?= $_SESSION['flash'] ?>
-        <?php unset($_SESSION['flash']); ?>
+    <div class="alert alert-success" role="alert">
+        <?= htmlspecialchars($_SESSION['flash']) ?>
     </div>
-<?php endif; ?>
-
+    <?php unset($_SESSION['flash']); ?>
+<?php endif ?>
+<h1 class="mb-4">Сайты</h1>
 <table class="table table-bordered" data-test="urls">
     <thead>
         <tr>

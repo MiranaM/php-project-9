@@ -113,9 +113,7 @@ $app->post('/urls', function (Request $request, Response $response) {
     if (!empty($errors)) {
         $_SESSION['errors'] = $errors;
         $_SESSION['old'] = $data;
-        return $response
-            ->withHeader('Location', '/')
-            ->withStatus(302);
+        return $response->withHeader('Location', '/')->withStatus(302);
     }
 
     $parsed = parse_url($url);
@@ -127,7 +125,7 @@ $app->post('/urls', function (Request $request, Response $response) {
         WHERE name = :name
     ');
     $stmt->execute(['name' => $normalizedUrl]);
-    $existing = $stmt->fetch();
+    $existing = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$existing) {
         $stmt = $pdo->prepare('
@@ -135,12 +133,14 @@ $app->post('/urls', function (Request $request, Response $response) {
             VALUES (:name, NOW())
         ');
         $stmt->execute(['name' => $normalizedUrl]);
-        $_SESSION['flash'] = 'URL успешно добавлен';
+        $urlId = $pdo->lastInsertId();
+        $_SESSION['flash'] = 'Страница успешно добавлена';
     } else {
-        $_SESSION['flash'] = 'URL уже существует';
+        $urlId = $existing['id'];
+        $_SESSION['flash'] = 'Страница уже существует';
     }
 
     return $response
-        ->withHeader('Location', '/urls')
+        ->withHeader('Location', "/urls/{$urlId}")
         ->withStatus(302);
 });
