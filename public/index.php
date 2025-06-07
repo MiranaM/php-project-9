@@ -6,7 +6,7 @@ session_start();
 
 $app = require __DIR__ . '/../app/config/bootstrap.php';
 
-require __DIR__ . '/../app/routes/home.php';
-require __DIR__ . '/../app/routes/urls.php';
+(require __DIR__ . '/../app/routes/home.php')($app);
+(require __DIR__ . '/../app/routes/urls.php')($app);
 
 $app->run();
