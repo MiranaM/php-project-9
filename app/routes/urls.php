@@ -105,33 +105,28 @@ $app->get('/urls', function (Request $request, Response $response) {
 
 $app->post('/urls', function (Request $request, Response $response) {
     $pdo = $this->get('pdo');
+    $renderer = $this->get('renderer');
 
     $data = $request->getParsedBody()['url'] ?? [];
     $url = trim($data['name'] ?? '');
 
     $errors = UrlValidator::validate(['url' => ['name' => $url]]);
     if (!empty($errors)) {
-        $_SESSION['errors'] = $errors;
-        $_SESSION['old'] = $data;
-        return $response->withHeader('Location', '/')->withStatus(302);
+        return $renderer->render($response->withStatus(422), 'home.phtml', [
+            'errors' => $errors,
+            'old' => $data
+        ]);
     }
 
     $parsed = parse_url($url);
     $normalizedUrl = "{$parsed['scheme']}://{$parsed['host']}";
 
-    $stmt = $pdo->prepare('
-        SELECT id
-        FROM urls
-        WHERE name = :name
-    ');
+    $stmt = $pdo->prepare('SELECT id FROM urls WHERE name = :name');
     $stmt->execute(['name' => $normalizedUrl]);
     $existing = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$existing) {
-        $stmt = $pdo->prepare('
-            INSERT INTO urls (name, created_at)
-            VALUES (:name, NOW())
-        ');
+        $stmt = $pdo->prepare('INSERT INTO urls (name, created_at) VALUES (:name, NOW())');
         $stmt->execute(['name' => $normalizedUrl]);
         $urlId = $pdo->lastInsertId();
         $_SESSION['flash'] = 'Страница успешно добавлена';
