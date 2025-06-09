@@ -64,7 +64,7 @@ return function (App $app) {
             $doc = new Document($html);
 
             $title = ($el = $doc->first('title')) instanceof \DiDom\Element ? $el->text() : null;
-            $h1 = ($el = $doc->first('h1')) instanceof \DiDom\Element ? $el->text() : null;            
+            $h1 = ($el = $doc->first('h1')) instanceof \DiDom\Element ? $el->text() : null;
             $description = ($el = $doc->first('meta[name=description]')) ? $el->getAttribute('content') : null;
 
             $stmt = $pdo->prepare('
