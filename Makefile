@@ -14,3 +14,6 @@ start:
 
 lint:
 	composer exec --verbose phpcs public templates --standard=PSR12
+
+test:
+	./vendor/bin/phpunit --coverage-clover=tests/coverage.xml

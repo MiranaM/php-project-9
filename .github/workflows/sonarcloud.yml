@@ -26,8 +26,7 @@ jobs:
           make install
 
       - name: Run tests with coverage
-        run: |
-          ./vendor/bin/phpunit --coverage-clover=tests/coverage.xml
+        run: ./vendor/bin/phpunit tests --coverage-clover=tests/coverage.xml
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
