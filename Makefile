@@ -17,3 +17,6 @@ lint:
 
 test:
 	./vendor/bin/phpunit --coverage-clover=tests/coverage.xml
+
+stan:
+	vendor/bin/phpstan analyse --memory-limit=512M
