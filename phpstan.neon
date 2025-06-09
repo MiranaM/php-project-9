@@ -5,6 +5,7 @@ parameters:
   level: 5
   paths:
     - src
-
+  autoload_files:
+          - vendor/bin/.phpunit/phpunit-5.7/vendor/autoload.php
   bootstrapFiles:
     - vendor/autoload.php
