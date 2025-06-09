@@ -9,9 +9,3 @@ parameters:
 
   bootstrapFiles:
     - vendor/autoload.php
-
-  autoload_files:
-    - vendor/autoload.php
-
-  autoload_directories:
-    - vendor/phpunit/phpunit/src
