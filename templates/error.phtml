@@ -1,7 +1,10 @@
-<h1 class="display-4 mb-3"><?= htmlspecialchars($title ?? 'Ошибка') ?></h1>
-<p class="lead">Ошибка <?= htmlspecialchars($statusCode ?? 500) ?></p>
-
 <?php
-$content = '';
+$title = $title ?? 'Упс что-то пошло не так';
+$content = $content ?? <<<HTML
+    <div class="text-center">
+        <h1 class="display-4">Упс что-то пошло не так</h1>
+        <p class="lead">Ошибка 500</p>
+    </div>
+HTML;
+
 include __DIR__ . '/layout.phtml';
-?>

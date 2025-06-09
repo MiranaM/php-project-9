@@ -4,7 +4,21 @@ require __DIR__ . '/../vendor/autoload.php';
 
 session_start();
 
-$app = require __DIR__ . '/../app/config/bootstrap.php';
+try {
+    $app = require __DIR__ . '/../app/config/bootstrap.php';
+} catch (\Throwable $e) {
+    $statusCode = 500;
+    $title = 'Ошибка подключения к базе данных';
+    $content = '<p class="lead">Проверьте переменную окружения <code>DATABASE_URL</code> или параметры подключения</p>';
+
+    ob_start();
+    include __DIR__ . '/../../templates/layout.phtml';
+    $html = ob_get_clean();
+
+    http_response_code($statusCode);
+    echo $html;
+    exit;
+}
 
 (require __DIR__ . '/../app/routes/home.php')($app);
 (require __DIR__ . '/../app/routes/urls.php')($app);
