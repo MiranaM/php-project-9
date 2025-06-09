@@ -6,6 +6,7 @@ namespace Tests\Feature;
 
 use PHPUnit\Framework\TestCase;
 use PDO;
+use PDOStatement;
 
 final class DatabaseTest extends TestCase
 {
@@ -37,12 +38,20 @@ final class DatabaseTest extends TestCase
         $this->pdo->exec("TRUNCATE urls RESTART IDENTITY CASCADE");
         $this->pdo->exec("INSERT INTO urls (name, created_at) VALUES ('https://example.com', NOW())");
 
+        /** @var PDOStatement|false $stmt */
         $stmt = $this->pdo->query("SELECT name FROM urls WHERE name = 'https://example.com'");
+
         if ($stmt === false) {
-            $this->fail('Query failed');
+            self::fail('Query failed');
         }
 
+        /** @var array{name: string}|false $result */
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        $this->assertEquals('https://example.com', $result['name']);
+
+        if (!is_array($result)) {
+            self::fail('Fetch returned false');
+        }
+
+        self::assertEquals('https://example.com', $result['name']);
     }
 }

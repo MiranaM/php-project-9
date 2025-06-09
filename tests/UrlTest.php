@@ -11,12 +11,14 @@ final class UrlTest extends TestCase
     public function testValidUrl(): void
     {
         $url = 'https://example.com';
-        $this->assertTrue(filter_var($url, FILTER_VALIDATE_URL) !== false);
+        $result = filter_var($url, FILTER_VALIDATE_URL);
+        self::assertNotFalse($result);
     }
 
     public function testInvalidUrl(): void
     {
         $url = 'not-a-url';
-        $this->assertFalse(filter_var($url, FILTER_VALIDATE_URL));
+        $result = filter_var($url, FILTER_VALIDATE_URL);
+        self::assertFalse($result);
     }
 }
