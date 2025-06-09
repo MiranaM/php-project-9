@@ -3,15 +3,20 @@
          colors="true"
          verbose="true"
          stopOnFailure="false">
+
     <testsuites>
         <testsuite name="Default">
             <directory>tests</directory>
         </testsuite>
     </testsuites>
 
-    <coverage>
+    <coverage processUncoveredFiles="true">
+        <include>
+            <directory suffix=".php">src</directory>
+        </include>
         <report>
             <clover outputFile="tests/coverage.xml"/>
         </report>
     </coverage>
+
 </phpunit>

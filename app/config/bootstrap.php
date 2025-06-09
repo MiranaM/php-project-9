@@ -40,7 +40,7 @@ Validator::lang('ru');
 
 $app = AppFactory::create();
 
-(require __DIR__ . '/../routes/home.php')($app);
-(require __DIR__ . '/../routes/urls.php')($app);
+(require_once __DIR__ . '/../routes/home.php')($app);
+(require_once __DIR__ . '/../routes/urls.php')($app);
 
 return $app;
