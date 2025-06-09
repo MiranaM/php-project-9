@@ -15,7 +15,7 @@ COPY composer.json composer.lock* ./
 RUN curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer
 
 # Установка зависимостей
-RUN composer install --no-interaction --prefer-dist --ignore-platform-reqs --no-dev=false
+RUN composer install --no-interaction --prefer-dist --ignore-platform-reqs
 
 # Копируем оставшиеся файлы проекта
 COPY . .
