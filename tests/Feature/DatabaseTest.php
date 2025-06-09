@@ -13,15 +13,21 @@ final class DatabaseTest extends TestCase
 
     protected function setUp(): void
     {
-        $url = parse_url(getenv('DATABASE_URL'));
+        $url = getenv('DATABASE_URL') ?: '';
+        $db = parse_url($url);
 
-        $host = $url['host'];
-        $port = $url['port'];
-        $db   = ltrim($url['path'], '/');
-        $user = $url['user'];
-        $pass = $url['pass'];
+        if (!is_array($db)) {
+            throw new \RuntimeException('Invalid DATABASE_URL');
+        }
 
-        $dsn = "pgsql:host=$host;port=$port;dbname=$db";
+        $host = $db['host'] ?? throw new \RuntimeException('Missing host');
+        $path = $db['path'] ?? throw new \RuntimeException('Missing path');
+        $user = $db['user'] ?? throw new \RuntimeException('Missing user');
+        $pass = $db['pass'] ?? throw new \RuntimeException('Missing password');
+        $port = $db['port'] ?? 5432;
+        $dbName = ltrim($path, '/');
+
+        $dsn = "pgsql:host=$host;port=$port;dbname=$dbName";
         $this->pdo = new PDO($dsn, $user, $pass);
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     }
@@ -32,8 +38,11 @@ final class DatabaseTest extends TestCase
         $this->pdo->exec("INSERT INTO urls (name, created_at) VALUES ('https://example.com', NOW())");
 
         $stmt = $this->pdo->query("SELECT name FROM urls WHERE name = 'https://example.com'");
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($stmt === false) {
+            $this->fail('Query failed');
+        }
 
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
         $this->assertEquals('https://example.com', $result['name']);
     }
 }
