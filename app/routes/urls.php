@@ -6,6 +6,7 @@ use Slim\Psr7\Request;
 use DiDom\Document;
 use GuzzleHttp\Client;
 use Validators\UrlValidator;
+use Slim\Exception\HttpNotFoundException;
 
 return function (App $app) {
     $app->get('/urls/{id}', function (Request $request, Response $response, $args) {
@@ -62,8 +63,8 @@ return function (App $app) {
 
             $doc = new Document($html);
 
-            $title = ($el = $doc->first('title')) ? $el->text() : null;
-            $h1 = ($el = $doc->first('h1')) ? $el->text() : null;
+            $title = ($el = $doc->first('title')) instanceof \DiDom\Element ? $el->text() : null;
+            $h1 = ($el = $doc->first('h1')) instanceof \DiDom\Element ? $el->text() : null;            
             $description = ($el = $doc->first('meta[name=description]')) ? $el->getAttribute('content') : null;
 
             $stmt = $pdo->prepare('
@@ -109,7 +110,9 @@ return function (App $app) {
         $pdo = $this->get('pdo');
         $renderer = $this->get('renderer');
 
-        $data = $request->getParsedBody()['url'] ?? [];
+        $data = $request->getParsedBody();
+        $data = is_array($data) ? $data : [];
+        $data = $data['url'] ?? [];
         $url = trim($data['name'] ?? '');
 
         $errors = UrlValidator::validate(['url' => ['name' => $url]]);
@@ -150,7 +153,7 @@ return function (App $app) {
         bool $displayErrorDetails,
         bool $logErrors,
         bool $logErrorDetails
-    ) use ($app) {
+    ) {
         $response = new Slim\Psr7\Response();
 
         $statusCode = $exception instanceof HttpNotFoundException ? 404 : 500;
@@ -160,7 +163,7 @@ return function (App $app) {
         include __DIR__ . '/../templates/error.phtml';
         $html = ob_get_clean();
 
-        $response->getBody()->write($html);
+        $response->getBody()->write($html !== false ? $html : '');
         return $response->withStatus($statusCode);
     });
 };

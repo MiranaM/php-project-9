@@ -1,9 +1,7 @@
-<?php ob_start(); ?>
-
-<h1 class="display-4 mb-3"><?= $title ?></h1>
-<p class="lead">Ошибка <?= $statusCode ?? 500 ?></p>
+<h1 class="display-4 mb-3"><?= htmlspecialchars($title ?? 'Ошибка') ?></h1>
+<p class="lead">Ошибка <?= htmlspecialchars($statusCode ?? 500) ?></p>
 
 <?php
-$content = ob_get_clean();
+$content = '';
 include __DIR__ . '/layout.phtml';
 ?>

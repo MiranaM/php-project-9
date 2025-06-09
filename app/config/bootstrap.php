@@ -23,9 +23,16 @@ $container->set('pdo', function () {
     if ($db === false) {
         throw new RuntimeException('Failed to parse DATABASE_URL.');
     }
+
+    $host = $db['host'] ?? throw new RuntimeException('DATABASE_URL missing host');
+    $path = $db['path'] ?? throw new RuntimeException('DATABASE_URL missing path');
+    $user = $db['user'] ?? throw new RuntimeException('DATABASE_URL missing user');
+    $pass = $db['pass'] ?? throw new RuntimeException('DATABASE_URL missing pass');
     $port = $db['port'] ?? 5432;
-    $dsn = "pgsql:host={$db['host']};port={$port};dbname=" . ltrim($db['path'], '/');
-    return new PDO($dsn, $db['user'], $db['pass']);
+
+    $dsn = "pgsql:host={$host};port={$port};dbname=" . ltrim($path, '/');
+
+    return new PDO($dsn, $user, $pass);
 });
 
 AppFactory::setContainer($container);
