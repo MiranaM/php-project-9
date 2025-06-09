@@ -20,7 +20,4 @@ try {
     exit;
 }
 
-(require __DIR__ . '/../app/routes/home.php')($app);
-(require __DIR__ . '/../app/routes/urls.php')($app);
-
 $app->run();

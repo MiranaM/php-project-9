@@ -38,4 +38,9 @@ $container->set('pdo', function () {
 AppFactory::setContainer($container);
 Validator::lang('ru');
 
-return AppFactory::create();
+$app = AppFactory::create();
+
+(require __DIR__ . '/../routes/home.php')($app);
+(require __DIR__ . '/../routes/urls.php')($app);
+
+return $app;
