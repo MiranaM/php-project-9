@@ -26,7 +26,8 @@
         "imangazaliev/didom": "^2.0"
     },
     "require-dev": {
-        "squizlabs/php_codesniffer": "^3.13"
+        "squizlabs/php_codesniffer": "^3.13",
+        "phpunit/phpunit": "^9.5"
     },
     "scripts": {
         "lint": "phpcs --standard=PSR12 public"
