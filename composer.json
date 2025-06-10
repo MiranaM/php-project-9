@@ -1,38 +1,38 @@
 {
-  "name": "hexlet/code",
-  "description": "hexlet php-package-9",
-  "type": "project",
-  "license": "MIT",
-  "autoload": {
-    "psr-4": {
-      "Hexlet\\Code\\": "src/",
-      "Validators\\": "validators/",
-      "Tests\\": "tests/"
+    "name": "hexlet/code",
+    "description": "hexlet php-package-9",
+    "type": "project",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Hexlet\\Code\\": "src/",
+            "Validators\\": "validators/",
+            "Tests\\": "tests/"
+        }
+    },
+    "authors": [
+        {
+            "name": "MiranaM",
+            "email": "0resama@mail.ru"
+        }
+    ],
+    "require": {
+        "slim/slim": "^4.0",
+        "slim/psr7": "^1.4",
+        "slim/php-view": "^3.0",
+        "vlucas/valitron": "^1.4",
+        "nesbot/carbon": "^2.0",
+        "php-di/php-di": "^7.0",
+        "guzzlehttp/guzzle": "^7.9",
+        "imangazaliev/didom": "^2.0"
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "^3.13",
+        "phpunit/phpunit": "^9.5",
+        "phpstan/phpstan": "^2.1",
+        "phpstan/phpstan-phpunit": "^2.0"
+    },
+    "scripts": {
+        "lint": "phpcs --standard=PSR12 public"
     }
-  },
-  "authors": [
-    {
-      "name": "MiranaM",
-      "email": "0resama@mail.ru"
-    }
-  ],
-  "require": {
-    "slim/slim": "^4.0",
-    "slim/psr7": "^1.4",
-    "slim/php-view": "^3.0",
-    "vlucas/valitron": "^1.4",
-    "nesbot/carbon": "^2.0",
-    "php-di/php-di": "^7.0",
-    "guzzlehttp/guzzle": "^7.9",
-    "imangazaliev/didom": "^2.0"
-  },
-  "require-dev": {
-    "squizlabs/php_codesniffer": "^3.13",
-    "phpunit/phpunit": "^9.5",
-    "phpstan/phpstan": "^2.1",
-    "phpstan/phpstan-phpunit": "^2.0"
-  },
-  "scripts": {
-    "lint": "phpcs --standard=PSR12 public"
-  }
 }
