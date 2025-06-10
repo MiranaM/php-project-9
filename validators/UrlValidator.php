@@ -6,6 +6,7 @@ use Valitron\Validator;
 
 class UrlValidator
 {
+    public const MSG_EMPTY_URL = self::MSG_EMPTY_URL;
     public static function validate(array $data): array
     {
         $name = trim($data['url']['name'] ?? '');

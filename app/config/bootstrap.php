@@ -1,5 +1,7 @@
 <?php
 
+use App\Exceptions\ConfigurationException;
+
 use DI\Container;
 use Slim\Factory\AppFactory;
 use Slim\Views\PhpRenderer;

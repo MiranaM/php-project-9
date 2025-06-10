@@ -160,10 +160,14 @@ return function (App $app) {
         $title = $statusCode === 404 ? 'Страница не найдена' : 'Упс что-то пошло не так';
 
         ob_start();
-        include __DIR__ . '/../../templates/error.phtml';
+        include_once __DIR__ . '/../../templates/error.phtml';
         $html = ob_get_clean();
 
         $response->getBody()->write($html !== false ? $html : '');
         return $response->withStatus($statusCode);
     });
 };
+
+function registerRoutes($router)
+{
+}
