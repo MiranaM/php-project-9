@@ -63,7 +63,7 @@ return function (App $app) {
 
             $doc = new Document($html);
 
-            $title = ($el = $doc->first('title')) instanceof \DiDom\Element ? $el->text() : null;
+            
             $h1 = ($el = $doc->first('h1')) instanceof \DiDom\Element ? $el->text() : null;
             $description = ($el = $doc->first('meta[name=description]')) ? $el->getAttribute('content') : null;
 
@@ -157,7 +157,7 @@ return function (App $app) {
         $response = new Slim\Psr7\Response();
 
         $statusCode = $exception instanceof HttpNotFoundException ? 404 : 500;
-        $title = $statusCode === 404 ? 'Страница не найдена' : 'Упс что-то пошло не так';
+        
 
         ob_start();
         include_once __DIR__ . '/../../templates/error.phtml';
@@ -168,6 +168,7 @@ return function (App $app) {
     });
 };
 
-function registerRoutes($router)
+function registerRoutes()
 {
+// TODO: implement or explain why it's empty
 }

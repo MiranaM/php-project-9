@@ -8,7 +8,7 @@ try {
     $app = require_once __DIR__ . '/../app/config/bootstrap.php';
 } catch (\Throwable $e) {
     $statusCode = 500;
-    $title = 'Ошибка подключения к базе данных';
+    
     $content = '<p class="lead">Проверьте переменную окружения <code>DATABASE_URL</code> или параметры подключения</p>';
 
     ob_start();
