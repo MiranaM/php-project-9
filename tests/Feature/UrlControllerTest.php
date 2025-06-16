@@ -11,7 +11,7 @@ final class UrlControllerTest extends TestCase
 {
     public function testGetUrlsPage(): void
     {
-        $app = require_once dirname(__DIR__, 2) . '/app/config/bootstrap.php';
+        $app = require_once dirname(__DIR__, 2) . '/src/bootstrap.php';
 
         $request = (new ServerRequestFactory())->createServerRequest('GET', '/urls');
         $response = $app->handle($request);
