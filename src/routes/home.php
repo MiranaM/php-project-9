@@ -17,5 +17,5 @@ return function (App $app) {
             'old' => $old,
             'flash' => $flash
         ]);
-    });
+    })->setName('home');
 };

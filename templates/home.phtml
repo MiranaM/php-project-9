@@ -6,28 +6,23 @@
             <h1 class="display-3">Анализатор страниц</h1>
             <p class="lead">Бесплатно проверяйте сайты на SEO пригодность</p>
 
-            <?php if (isset($_SESSION['flash'])): ?>
-                <div class="alert alert-success" role="alert">
-                    <?= htmlspecialchars($_SESSION['flash']) ?>
-                </div>
-                <?php unset($_SESSION['flash']); ?>
+            <?php if (!empty($flash)): ?>
+            <div class="alert alert-<?= htmlspecialchars($flash['type']) ?>" role="alert">
+                <?= htmlspecialchars($flash['message']) ?>
+            </div>
             <?php endif ?>
 
             <form action="/urls" method="post" class="row">
                 <div class="col-8">
                     <label for="url-name" class="visually-hidden">URL</label>
-                    <input
-                        type="text"
-                        id="url-name"
-                        name="url[name]"
+                    <input type="text" id="url-name" name="url[name]"
                         value="<?= htmlspecialchars($old['name'] ?? '') ?>"
                         class="form-control form-control-lg <?= !empty($errors['name']) ? 'is-invalid' : '' ?>"
-                        placeholder="https://www.example.com"
-                    >
+                        placeholder="https://www.example.com">
                     <?php if (!empty($errors['name'])): ?>
-                        <div class="invalid-feedback">
-                            <?= htmlspecialchars($errors['name'][0]) ?>
-                        </div>
+                    <div class="invalid-feedback">
+                        <?= htmlspecialchars($errors['name'][0]) ?>
+                    </div>
                     <?php endif ?>
                 </div>
                 <div class="col-2">

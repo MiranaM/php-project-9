@@ -1,50 +1,60 @@
 <?php ob_start(); ?>
 
-<?php if (isset($_SESSION['flash'])): ?>
-    <div class="alert alert-success" role="alert">
-        <?= htmlspecialchars($_SESSION['flash']) ?>
-    </div>
-    <?php unset($_SESSION['flash']); ?>
-<?php endif ?>
+<div class="container mt-5">
+    <?php if (!empty($flash)): ?>
+        <div class="alert alert-<?= htmlspecialchars($flash['type']) ?>">
+            <?= htmlspecialchars($flash['message']) ?>
+        </div>
+    <?php endif ?>
 
-<h1 class="display-4 mb-3">Сайт: <?= htmlspecialchars($url['name']) ?></h1>
+    <h1 class="mb-4">Сайт: <?= htmlspecialchars($url['name']) ?></h1>
 
-<form method="post" action="/urls/<?= $url['id'] ?>/checks">
-    <button type="submit" class="btn btn-primary mb-3">Запустить проверку</button>
-</form>
+    <form method="post" action="/urls/<?= $url['id'] ?>/checks">
+        <button type="submit" class="btn btn-primary">Запустить проверку</button>
+    </form>
 
-<table class="table table-bordered w-50">
-    <tr><th>ID</th><td><?= $url['id'] ?></td></tr>
-    <tr><th>Имя</th><td><?= htmlspecialchars($url['name']) ?></td></tr>
-    <tr><th>Дата создания</th><td><?= $url['created_at'] ?></td></tr>
-</table>
-
-<h2 class="mt-4">Проверки</h2>
-
-<table data-test="checks" class="table table-bordered table-hover mt-3">
-    <thead>
+    <table class="table table-bordered mt-4">
         <tr>
             <th>ID</th>
-            <th>Код ответа</th>
-            <th>H1</th>
-            <th>Title</th>
-            <th>Description</th>
-            <th>Дата создания</th>
+            <td><?= $url['id'] ?></td>
         </tr>
-    </thead>
-    <tbody>
+        <tr>
+            <th>Имя</th>
+            <td><?= htmlspecialchars($url['name']) ?></td>
+        </tr>
+        <tr>
+            <th>Дата создания</th>
+            <td><?= (new DateTime($url['created_at']))->format('Y-m-d H:i:s') ?></td>
+        </tr>
+    </table>
+
+    <h2 class="mt-4">Проверки</h2>
+
+    <table class="table table-hover table-bordered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Код ответа</th>
+                <th>title</th>
+                <th>h1</th>
+                <th>description</th>
+                <th>Дата создания</th>
+            </tr>
+        </thead>
+        <tbody>
         <?php foreach ($checks as $check): ?>
             <tr>
                 <td><?= $check['id'] ?></td>
                 <td><?= $check['status_code'] ?></td>
-                <td><?= htmlspecialchars($check['h1'] ?? '') ?></td>
-                <td><?= htmlspecialchars($check['title'] ?? '') ?></td>
-                <td><?= htmlspecialchars($check['description'] ?? '') ?></td>
-                <td><?= $check['created_at'] ?></td>
+                <td><?= htmlspecialchars($check['title']) ?></td>
+                <td><?= htmlspecialchars($check['h1']) ?></td>
+                <td><?= htmlspecialchars($check['description']) ?></td>
+                <td><?= (new DateTime($check['created_at']))->format('Y-m-d H:i:s') ?></td>
             </tr>
         <?php endforeach ?>
-    </tbody>
-</table>
+        </tbody>
+    </table>
+</div>
 
 <?php
 $content = ob_get_clean();

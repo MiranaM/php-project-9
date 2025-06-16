@@ -1,23 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 require __DIR__ . '/../vendor/autoload.php';
 
 session_start();
 
-try {
-    $app = require __DIR__ . '/../app/config/bootstrap.php';
-} catch (\Throwable $e) {
-    $statusCode = 500;
-    $title = 'Ошибка подключения к базе данных';
-    $content = '<p class="lead">Проверьте переменную окружения <code>DATABASE_URL</code> или параметры подключения</p>';
-
-    ob_start();
-    include __DIR__ . '/../../templates/layout.phtml';
-    $html = ob_get_clean();
-
-    http_response_code($statusCode);
-    echo $html;
-    exit;
-}
-
+$app = require __DIR__ . '/../src/config/bootstrap.php';
 $app->run();
