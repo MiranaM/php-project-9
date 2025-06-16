@@ -12,7 +12,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 $container = new Container();
 
 $container->set('renderer', function () {
-    return new PhpRenderer(__DIR__ . '/../../templates');
+    return new PhpRenderer(__DIR__ . '/../templates');
 });
 
 $container->set('flash', function () {
@@ -66,7 +66,7 @@ $errorMiddleware->setDefaultErrorHandler(function (
     ]);
 });
 
-(require_once __DIR__ . '/../routes/home.php')($app);
-(require_once __DIR__ . '/../routes/urls.php')($app);
+(require_once __DIR__ . '/routes/home.php')($app);
+(require_once __DIR__ . '/routes/urls.php')($app);
 
 return $app;
