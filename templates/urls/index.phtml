@@ -1,35 +1,38 @@
-<?php ob_start(); ?>
-
-<div class="container mt-5">
-    <h1 class="mb-4">Сайты</h1>
-
-    <?php if (!empty($flash)): ?>
-        <div class="alert alert-<?= htmlspecialchars($flash['type']) ?>">
-            <?= htmlspecialchars($flash['message']) ?>
-        </div>
-    <?php endif ?>
-
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Имя</th>
-                <th>Последняя проверка</th>
-                <th>Код ответа</th>
-            </tr>
-        </thead>
-        <tbody>
-        <?php foreach ($urls as $url): ?>
-            <tr>
-                <td><?= $url['id'] ?></td>
-                <td><a href="/urls/<?= $url['id'] ?>"><?= htmlspecialchars($url['name']) ?></a></td>
-                <td><?= $checksIndex[$url['id']]['created_at'] ?? '—' ?></td>
-                <td><?= $checksIndex[$url['id']]['status_code'] ?? '—' ?></td>
-            </tr>
-        <?php endforeach ?>
-        </tbody>
-    </table>
-</div>
+<?php
+ob_start();
+?>
+<?php if (isset($_SESSION['flash'])): ?>
+    <div class="alert alert-success" role="alert">
+        <?= htmlspecialchars($_SESSION['flash']) ?>
+    </div>
+    <?php unset($_SESSION['flash']); ?>
+<?php endif ?>
+<?php if (!empty($errors['name'])): ?>
+    <div class="alert alert-danger" role="alert">
+        <?= htmlspecialchars($errors['name']) ?>
+    </div>
+<?php endif ?>
+<h1 class="mb-4">Сайты</h1>
+<table class="table table-bordered" data-test="urls">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Имя</th>
+            <th>Последняя проверка</th>
+            <th>Код ответа</th>
+        </tr>
+    </thead>
+    <tbody>
+    <?php foreach ($urls as $url): ?>
+        <tr>
+            <td><?= htmlspecialchars($url['id']) ?></td>
+            <td><a href="/urls/<?= $url['id'] ?>"><?= htmlspecialchars($url['name']) ?></a></td>
+            <td><?= $url['last_check'] ?? '—' ?></td>
+            <td><?= $url['last_status'] ?? '—' ?></td>
+        </tr>
+    <?php endforeach; ?>
+    </tbody>
+</table>
 
 <?php
 $content = ob_get_clean();

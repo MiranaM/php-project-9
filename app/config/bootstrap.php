@@ -4,9 +4,6 @@ use DI\Container;
 use Slim\Factory\AppFactory;
 use Slim\Views\PhpRenderer;
 use Valitron\Validator;
-use Slim\Exception\HttpNotFoundException;
-use Slim\Psr7\Response;
-use Psr\Http\Message\ServerRequestInterface;
 
 $container = new Container();
 
@@ -22,6 +19,7 @@ $container->set('pdo', function () {
     }
 
     $db = parse_url($databaseUrl);
+
     if ($db === false) {
         throw new RuntimeException('Failed to parse DATABASE_URL.');
     }
@@ -33,36 +31,16 @@ $container->set('pdo', function () {
     $port = $db['port'] ?? 5432;
 
     $dsn = "pgsql:host={$host};port={$port};dbname=" . ltrim($path, '/');
+
     return new PDO($dsn, $user, $pass);
 });
 
 AppFactory::setContainer($container);
-$app = AppFactory::create();
-
 Validator::lang('ru');
 
-(require __DIR__ . '/../routes/home.php')($app);
-(require __DIR__ . '/../routes/urls.php')($app);
+$app = AppFactory::create();
 
-$errorMiddleware = $app->addErrorMiddleware(true, true, true);
-$errorMiddleware->setDefaultErrorHandler(function (
-    ServerRequestInterface $request,
-    Throwable $exception,
-    bool $displayErrorDetails,
-    bool $logErrors,
-    bool $logErrorDetails
-) use ($app) {
-    $response = new Response();
-    $statusCode = $exception instanceof HttpNotFoundException ? 404 : 500;
-    $message = $statusCode === 404
-        ? 'Страница не найдена'
-        : 'Упс, что-то пошло не так';
-
-    $renderer = $app->getContainer()->get('renderer');
-    return $renderer->render($response->withStatus($statusCode), 'error.phtml', [
-        'message' => $message,
-        'status' => $statusCode
-    ]);
-});
+(require_once __DIR__ . '/../routes/home.php')($app);
+(require_once __DIR__ . '/../routes/urls.php')($app);
 
 return $app;
