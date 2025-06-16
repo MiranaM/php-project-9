@@ -5,6 +5,9 @@ use Slim\Factory\AppFactory;
 use Slim\Views\PhpRenderer;
 use Valitron\Validator;
 use Slim\Flash\Messages;
+use Slim\Exception\HttpNotFoundException;
+use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Message\ResponseInterface as Response;
 
 $container = new Container();
 
@@ -44,6 +47,24 @@ AppFactory::setContainer($container);
 Validator::lang('ru');
 
 $app = AppFactory::create();
+
+$errorMiddleware = $app->addErrorMiddleware(true, true, true);
+
+$errorMiddleware->setDefaultErrorHandler(function (
+    Request $request,
+    Throwable $exception,
+    bool $displayErrorDetails
+) use ($app) {
+    $renderer = $app->getContainer()->get('renderer');
+    $response = new \Slim\Psr7\Response();
+
+    $statusCode = $exception instanceof HttpNotFoundException ? 404 : 500;
+
+    return $renderer->render($response->withStatus($statusCode), 'error.phtml', [
+        'title' => 'Произошла ошибка',
+        'message' => $exception->getMessage()
+    ]);
+});
 
 (require_once __DIR__ . '/../routes/home.php')($app);
 (require_once __DIR__ . '/../routes/urls.php')($app);

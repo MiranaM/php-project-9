@@ -20,7 +20,7 @@ return function (App $app) {
         $url = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$url) {
-            return $this->get('renderer')->render($response->withStatus(500), 'error.phtml');
+            throw new \Slim\Exception\HttpNotFoundException($request);
         }
 
         if (isset($url['created_at'])) {
