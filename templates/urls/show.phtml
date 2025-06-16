@@ -1,10 +1,7 @@
-<?php ob_start(); ?>
-
-<?php if (isset($_SESSION['flash'])): ?>
-    <div class="alert alert-success" role="alert">
-        <?= htmlspecialchars($_SESSION['flash']) ?>
-    </div>
-    <?php unset($_SESSION['flash']); ?>
+<?php if (!empty($flash)): ?>
+<div class="alert alert-<?= $flash['type'] ?>" role="alert">
+    <?= htmlspecialchars($flash['message']) ?>
+</div>
 <?php endif ?>
 
 <h1 class="display-4 mb-3">Сайт: <?= htmlspecialchars($url['name']) ?></h1>
@@ -14,9 +11,18 @@
 </form>
 
 <table class="table table-bordered w-50">
-    <tr><th>ID</th><td><?= $url['id'] ?></td></tr>
-    <tr><th>Имя</th><td><?= htmlspecialchars($url['name']) ?></td></tr>
-    <tr><th>Дата создания</th><td><?= $url['created_at'] ?></td></tr>
+    <tr>
+        <th>ID</th>
+        <td><?= $url['id'] ?></td>
+    </tr>
+    <tr>
+        <th>Имя</th>
+        <td><?= htmlspecialchars($url['name']) ?></td>
+    </tr>
+    <tr>
+        <th>Дата создания</th>
+        <td><?= $url['created_at'] ?></td>
+    </tr>
 </table>
 
 <h2 class="mt-4">Проверки</h2>
@@ -34,14 +40,14 @@
     </thead>
     <tbody>
         <?php foreach ($checks as $check): ?>
-            <tr>
-                <td><?= $check['id'] ?></td>
-                <td><?= $check['status_code'] ?></td>
-                <td><?= htmlspecialchars($check['h1'] ?? '') ?></td>
-                <td><?= htmlspecialchars($check['title'] ?? '') ?></td>
-                <td><?= htmlspecialchars($check['description'] ?? '') ?></td>
-                <td><?= $check['created_at'] ?></td>
-            </tr>
+        <tr>
+            <td><?= $check['id'] ?></td>
+            <td><?= $check['status_code'] ?></td>
+            <td><?= htmlspecialchars($check['h1'] ?? '') ?></td>
+            <td><?= htmlspecialchars($check['title'] ?? '') ?></td>
+            <td><?= htmlspecialchars($check['description'] ?? '') ?></td>
+            <td><?= $check['created_at'] ?></td>
+        </tr>
         <?php endforeach ?>
     </tbody>
 </table>

@@ -5,21 +5,27 @@ use Slim\Psr7\Response;
 use Slim\Psr7\Request;
 use DiDom\Document;
 use GuzzleHttp\Client;
-use Validators\UrlValidator;
-use Slim\Exception\HttpNotFoundException;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\ConnectException;
+use Valitron\Validator;
+use Slim\Routing\RouteContext;
 
 return function (App $app) {
     $app->get('/urls/{id}', function (Request $request, Response $response, $args) {
         $pdo = $this->get('pdo');
         $id = $args['id'];
 
-        $stmt = $pdo->prepare('
-            SELECT *
-            FROM urls
-            WHERE id = :id
-        ');
+        $stmt = $pdo->prepare('SELECT * FROM urls WHERE id = :id');
         $stmt->execute(['id' => $id]);
         $url = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$url) {
+            return $this->get('renderer')->render($response->withStatus(500), 'error.phtml');
+        }
+
+        if (isset($url['created_at'])) {
+            $url['created_at'] = substr($url['created_at'], 0, 19);
+        }
 
         $stmt = $pdo->prepare('
             SELECT *
@@ -30,28 +36,39 @@ return function (App $app) {
         $stmt->execute(['url_id' => $id]);
         $checks = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        return $this->get('renderer')
-            ->render($response, 'urls/show.phtml', [
-                'url' => $url,
-                'checks' => $checks,
-            ]);
-    });
+        foreach ($checks as &$check) {
+            if (isset($check['created_at'])) {
+                $check['created_at'] = substr($check['created_at'], 0, 19);
+            }
+        }
+        $flash = $this->get('flash');
+        $messages = $flash->getMessages();
+        $flashData = $messages['flash'][0] ?? null;
+
+        return $this->get('renderer')->render($response, 'urls/show.phtml', [
+            'url' => $url,
+            'checks' => $checks,
+            'flash' => $flashData,
+        ]);
+    })->setName('urls.show');
 
     $app->post('/urls/{id}/checks', function (Request $request, Response $response, $args) {
         $pdo = $this->get('pdo');
         $id = $args['id'];
+        $flash = $this->get('flash');
+        $messages = $flash->getMessages();
+        $flashData = $messages['flash'][0] ?? null;
 
-        $stmt = $pdo->prepare('
-            SELECT name
-            FROM urls
-            WHERE id = :id
-        ');
+        $routeParser = RouteContext::fromRequest($request)->getRouteParser();
+
+        $stmt = $pdo->prepare('SELECT name FROM urls WHERE id = :id');
         $stmt->execute(['id' => $id]);
         $url = $stmt->fetchColumn();
 
         if (!$url) {
-            $_SESSION['flash'] = 'Сайт не найден';
-            return $response->withHeader('Location', "/urls/{$id}")->withStatus(302);
+            $flash->addMessage('flash', ['type' => 'danger', 'message' => 'Сайт не найден']);
+            $path = $routeParser->urlFor('urls.show', ['id' => $id]);
+            return $response->withHeader('Location', $path)->withStatus(302);
         }
 
         $client = new Client(['timeout' => 10]);
@@ -63,9 +80,9 @@ return function (App $app) {
 
             $doc = new Document($html);
 
-            $title = ($el = $doc->first('title')) instanceof \DiDom\Element ? $el->text() : null;
-            $h1 = ($el = $doc->first('h1')) instanceof \DiDom\Element ? $el->text() : null;
-            $description = ($el = $doc->first('meta[name=description]')) ? $el->getAttribute('content') : null;
+            $title = $doc->first('title')?->text() ?? null;
+            $h1 = $doc->first('h1')?->text() ?? null;
+            $description = $doc->first('meta[name=description]')?->getAttribute('content') ?? null;
 
             $stmt = $pdo->prepare('
                 INSERT INTO url_checks (url_id, status_code, title, h1, description, created_at)
@@ -79,48 +96,89 @@ return function (App $app) {
                 'description' => $description,
             ]);
 
-            $_SESSION['flash'] = "Страница успешно проверена";
-        } catch (\Exception $e) {
-            $_SESSION['flash'] = 'Ошибка при выполнении проверки';
+            $flash->addMessage('flash', ['type' => 'success', 'message' => 'Страница успешно проверена']);
+        } catch (ConnectException $e) {
+            $flash->addMessage('flash', ['type' => 'danger', 'message' => 'Не удалось подключиться к сайту']);
+        } catch (RequestException $e) {
+            $flash->addMessage('flash', ['type' => 'danger', 'message' => 'Ошибка при выполнении запроса: ' . $e->getMessage()]);
         }
 
-        return $response->withHeader('Location', "/urls/{$id}")->withStatus(302);
-    });
+        $path = $routeParser->urlFor('urls.show', ['id' => $id]);
+        return $response->withHeader('Location', $path)->withStatus(302);
+    })->setName('urls.check');
 
     $app->get('/urls', function (Request $request, Response $response) {
         $pdo = $this->get('pdo');
 
-        $stmt = $pdo->query('
-            SELECT urls.*,
-                   MAX(url_checks.created_at) AS last_check,
-                   MAX(url_checks.status_code) AS last_status
-            FROM urls
-            LEFT JOIN url_checks ON urls.id = url_checks.url_id
-            GROUP BY urls.id
-            ORDER BY urls.id DESC
-        ');
-        $urls = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $urlsStmt = $pdo->query('SELECT * FROM urls ORDER BY id DESC');
+        $urls = $urlsStmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $checksStmt = $pdo->query("
+            SELECT url_id, MAX(created_at) AS last_check
+            FROM url_checks
+            GROUP BY url_id
+        ");
+        $lastChecks = $checksStmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $statusStmt = $pdo->query("
+            SELECT uc.url_id, uc.status_code, uc.created_at
+            FROM url_checks uc
+            INNER JOIN (
+                SELECT url_id, MAX(created_at) AS last_check
+                FROM url_checks
+                GROUP BY url_id
+            ) latest ON uc.url_id = latest.url_id AND uc.created_at = latest.last_check
+        ");
+
+        $statuses = [];
+        foreach ($statusStmt as $row) {
+            $statuses[$row['url_id']] = [
+                'last_status' => $row['status_code'],
+                'last_check' => $row['created_at']
+            ];
+        }
+
+        foreach ($urls as &$url) {
+            $urlId = $url['id'];
+            $url['last_status'] = $statuses[$urlId]['last_status'] ?? null;
+            $url['last_check'] = $statuses[$urlId]['last_check'] ?? null;
+            if ($url['last_check']) {
+                $url['last_check'] = substr($url['last_check'], 0, 19);
+            }
+        }
 
         return $this->get('renderer')->render($response, 'urls/index.phtml', [
             'urls' => $urls,
         ]);
-    });
+    })->setName('urls.index');
 
     $app->post('/urls', function (Request $request, Response $response) {
         $pdo = $this->get('pdo');
         $renderer = $this->get('renderer');
+        $flash = $this->get('flash');
+        $messages = $flash->getMessages();
+        $flashData = $messages['flash'][0] ?? null;
+
+        $routeParser = RouteContext::fromRequest($request)->getRouteParser();
 
         $data = $request->getParsedBody();
         $data = is_array($data) ? $data : [];
         $data = $data['url'] ?? [];
         $url = trim($data['name'] ?? '');
 
-        $errors = UrlValidator::validate(['url' => ['name' => $url]]);
-        if (!empty($errors)) {
-            return $renderer->render($response->withStatus(422), 'home.phtml', [
-                'errors' => $errors,
-                'old' => $data
-            ]);
+        $v = new Validator(['name' => $url]);
+        $v->labels(['name' => 'URL']);
+        $v->rule('required', 'name')->message('URL не должен быть пустым');
+        $v->rule('url', 'name')->message('Некорректный URL');
+        $v->rule('lengthMax', 'name', 255)->message('URL не должен превышать 255 символов');
+
+        if (!$v->validate()) {
+            $flash = $this->get('flash');
+
+            $flash->addMessage('errors', $v->errors());
+            $flash->addMessage('old', $data);
+            $path = $routeParser->urlFor('home');
+            return $response->withHeader('Location', $path)->withStatus(302);
         }
 
         $parsed = parse_url($url);
@@ -134,36 +192,13 @@ return function (App $app) {
             $stmt = $pdo->prepare('INSERT INTO urls (name, created_at) VALUES (:name, NOW())');
             $stmt->execute(['name' => $normalizedUrl]);
             $urlId = $pdo->lastInsertId();
-            $_SESSION['flash'] = 'Страница успешно добавлена';
+            $flash->addMessage('flash', ['type' => 'success', 'message' => 'Страница успешно добавлена']);
         } else {
             $urlId = $existing['id'];
-            $_SESSION['flash'] = 'Страница уже существует';
+            $flash->addMessage('flash', ['type' => 'danger', 'message' => 'Страница уже существует']);
         }
 
-        return $response
-            ->withHeader('Location', "/urls/{$urlId}")
-            ->withStatus(302);
-    });
-
-    $errorMiddleware = $app->addErrorMiddleware(true, true, true);
-
-    $errorMiddleware->setDefaultErrorHandler(function (
-        Psr\Http\Message\ServerRequestInterface $request,
-        Throwable $exception,
-        bool $displayErrorDetails,
-        bool $logErrors,
-        bool $logErrorDetails
-    ) {
-        $response = new Slim\Psr7\Response();
-
-        $statusCode = $exception instanceof HttpNotFoundException ? 404 : 500;
-        $title = $statusCode === 404 ? 'Страница не найдена' : 'Упс что-то пошло не так';
-
-        ob_start();
-        include __DIR__ . '/../../templates/error.phtml';
-        $html = ob_get_clean();
-
-        $response->getBody()->write($html !== false ? $html : '');
-        return $response->withStatus($statusCode);
-    });
+        $path = $routeParser->urlFor('urls.show', ['id' => $urlId]);
+        return $response->withHeader('Location', $path)->withStatus(302);
+    })->setName('urls.store');
 };

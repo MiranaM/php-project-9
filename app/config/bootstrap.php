@@ -4,11 +4,16 @@ use DI\Container;
 use Slim\Factory\AppFactory;
 use Slim\Views\PhpRenderer;
 use Valitron\Validator;
+use Slim\Flash\Messages;
 
 $container = new Container();
 
 $container->set('renderer', function () {
     return new PhpRenderer(__DIR__ . '/../../templates');
+});
+
+$container->set('flash', function () {
+    return new Messages();
 });
 
 $container->set('pdo', function () {

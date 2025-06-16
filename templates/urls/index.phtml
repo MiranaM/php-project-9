@@ -1,16 +1,17 @@
 <?php
 ob_start();
 ?>
-<?php if (isset($_SESSION['flash'])): ?>
-    <div class="alert alert-success" role="alert">
-        <?= htmlspecialchars($_SESSION['flash']) ?>
-    </div>
-    <?php unset($_SESSION['flash']); ?>
+
+<?php if (!empty($flash)): ?>
+<div class="alert alert-<?= htmlspecialchars($flash['type']) ?>" role="alert">
+    <?= htmlspecialchars($flash['message']) ?>
+</div>
 <?php endif ?>
+
 <?php if (!empty($errors['name'])): ?>
-    <div class="alert alert-danger" role="alert">
-        <?= htmlspecialchars($errors['name']) ?>
-    </div>
+<div class="alert alert-danger" role="alert">
+    <?= htmlspecialchars($errors['name']) ?>
+</div>
 <?php endif ?>
 <h1 class="mb-4">Сайты</h1>
 <table class="table table-bordered" data-test="urls">
@@ -23,14 +24,14 @@ ob_start();
         </tr>
     </thead>
     <tbody>
-    <?php foreach ($urls as $url): ?>
+        <?php foreach ($urls as $url): ?>
         <tr>
             <td><?= htmlspecialchars($url['id']) ?></td>
             <td><a href="/urls/<?= $url['id'] ?>"><?= htmlspecialchars($url['name']) ?></a></td>
             <td><?= $url['last_check'] ?? '—' ?></td>
             <td><?= $url['last_status'] ?? '—' ?></td>
         </tr>
-    <?php endforeach; ?>
+        <?php endforeach; ?>
     </tbody>
 </table>
 
