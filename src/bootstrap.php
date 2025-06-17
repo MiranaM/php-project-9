@@ -46,6 +46,12 @@ $container->set('pdo', function () {
 AppFactory::setContainer($container);
 $app = AppFactory::create();
 
+// Явно получаем контейнер, чтобы PHPStan не ругался
+$appContainer = $app->getContainer();
+if (!$appContainer instanceof \Psr\Container\ContainerInterface) {
+    throw new \RuntimeException('DI контейнер не инициализирован');
+}
+
 Validator::lang('ru');
 
 $errorMiddleware = $app->addErrorMiddleware(true, true, true);
@@ -54,8 +60,8 @@ $errorMiddleware->setDefaultErrorHandler(function (
     Request $request,
     Throwable $exception,
     bool $displayErrorDetails
-) use ($app) {
-    $renderer = $app->getContainer()->get('renderer');
+) use ($appContainer) {
+    $renderer = $appContainer->get('renderer');
     $response = new \Slim\Psr7\Response();
 
     $statusCode = $exception instanceof HttpNotFoundException ? 404 : 500;
