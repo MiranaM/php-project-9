@@ -43,12 +43,10 @@ $container->set('pdo', function () {
     return new PDO($dsn, $user, $pass);
 });
 
-$app = AppFactory::create();
 AppFactory::setContainer($container);
+$app = AppFactory::create();
 
 Validator::lang('ru');
-
-$app = AppFactory::create();
 
 $errorMiddleware = $app->addErrorMiddleware(true, true, true);
 

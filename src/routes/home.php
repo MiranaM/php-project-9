@@ -6,6 +6,7 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 
 return function (App $app) {
     $container = $app->getContainer();
+    assert($container instanceof \Psr\Container\ContainerInterface);
 
     $app->get('/', function (Request $request, Response $response) use ($container) {
         $flash = $container->get('flash');
