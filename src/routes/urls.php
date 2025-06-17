@@ -12,8 +12,11 @@ use Valitron\Validator;
 use Slim\Routing\RouteContext;
 
 return function (App $app): void {
-    /** @var ContainerInterface $container */
+/** @var ContainerInterface $container */
     $container = $app->getContainer();
+    if ($container === null) {
+        throw new \RuntimeException('DI контейнер не настроен');
+    }
 
     $app->get('/urls/{id}', function (Request $request, Response $response, $args) use ($container) {
         $pdo = $container->get('pdo');
@@ -84,9 +87,16 @@ return function (App $app): void {
             $html = $res->getBody()->getContents();
 
             $doc = new Document($html);
-            $title = $doc->first('title')?->text() ?? null;
-            $h1 = $doc->first('h1')?->text() ?? null;
-            $description = $doc->first('meta[name=description]')?->getAttribute('content') ?? null;
+            $titleElement = $doc->first('title');
+            $title = $titleElement instanceof \DiDom\Element ? $titleElement->text() : null;
+
+            $h1Element = $doc->first('h1');
+            $h1 = $h1Element instanceof \DiDom\Element ? $h1Element->text() : null;
+
+            $descElement = $doc->first('meta[name=description]');
+            $description = $descElement instanceof \DiDom\Element
+                ? $descElement->getAttribute('content')
+                : null;
 
             $stmt = $pdo->prepare('
                 INSERT INTO url_checks (url_id, status_code, title, h1, description, created_at)

@@ -43,7 +43,9 @@ $container->set('pdo', function () {
     return new PDO($dsn, $user, $pass);
 });
 
+$app = AppFactory::create();
 AppFactory::setContainer($container);
+
 Validator::lang('ru');
 
 $app = AppFactory::create();
