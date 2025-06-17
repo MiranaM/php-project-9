@@ -14,9 +14,6 @@ use Slim\Routing\RouteContext;
 return function (App $app): void {
 /** @var ContainerInterface $container */
     $container = $app->getContainer();
-    if ($container === null) {
-        throw new \RuntimeException('DI контейнер не настроен');
-    }
 
     $app->get('/urls/{id}', function (Request $request, Response $response, $args) use ($container) {
         $pdo = $container->get('pdo');
