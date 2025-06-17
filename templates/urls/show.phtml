@@ -1,8 +1,7 @@
 <?php if (!empty($flash)): ?>
-<div class="alert alert-<?= $flash['type'] ?>" role="alert">
-    <?= htmlspecialchars($flash['message']) ?>
-</div>
-<?php endif ?>
+<div><?= htmlspecialchars($flash['message']) ?></div>
+<?php endif; ?>
+
 
 <h1 class="display-4 mb-3">Сайт: <?= htmlspecialchars($url['name']) ?></h1>
 
