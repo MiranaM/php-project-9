@@ -178,8 +178,7 @@ return function (App $app): void {
         if (!$v->validate()) {
             $flash->addMessage('errors', $v->errors());
             $flash->addMessage('old', $data);
-            $path = $routeParser->urlFor('home');
-            return $response->withHeader('Location', $path)->withStatus(302);
+            return $renderer->render($response->withStatus(422), 'home.phtml');
         }
 
         $parsed = parse_url($url);
