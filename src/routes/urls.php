@@ -176,9 +176,12 @@ return function (App $app): void {
         $v->rule('lengthMax', 'name', 255)->message('URL не должен превышать 255 символов');
 
         if (!$v->validate()) {
-            $flash->addMessage('errors', $v->errors());
-            $flash->addMessage('old', $data);
-            return $renderer->render($response->withStatus(422), 'home.phtml');
+            $errors = $v->errors();
+            $old = $data;
+            return $renderer->render($response->withStatus(422), 'home.phtml', [
+                'errors' => $errors,
+                'old' => $old,
+            ]);
         }
 
         $parsed = parse_url($url);
