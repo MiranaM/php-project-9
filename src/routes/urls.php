@@ -3,6 +3,7 @@
 use Slim\App;
 use Slim\Psr7\Response;
 use Slim\Psr7\Request;
+use Psr\Container\ContainerInterface;
 use DiDom\Document;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
@@ -10,9 +11,12 @@ use GuzzleHttp\Exception\ConnectException;
 use Valitron\Validator;
 use Slim\Routing\RouteContext;
 
-return function (App $app) {
-    $app->get('/urls/{id}', function (Request $request, Response $response, $args) {
-        $pdo = $this->get('pdo');
+return function (App $app): void {
+    /** @var ContainerInterface $container */
+    $container = $app->getContainer();
+
+    $app->get('/urls/{id}', function (Request $request, Response $response, $args) use ($container) {
+        $pdo = $container->get('pdo');
         $id = $args['id'];
 
         $stmt = $pdo->prepare('SELECT * FROM urls WHERE id = :id');
@@ -41,21 +45,22 @@ return function (App $app) {
                 $check['created_at'] = substr($check['created_at'], 0, 19);
             }
         }
-        $flash = $this->get('flash');
+
+        $flash = $container->get('flash');
         $messages = $flash->getMessages();
         $flashData = $messages['flash'][0] ?? null;
 
-        return $this->get('renderer')->render($response, 'urls/show.phtml', [
+        return $container->get('renderer')->render($response, 'urls/show.phtml', [
             'url' => $url,
             'checks' => $checks,
             'flash' => $flashData,
         ]);
     })->setName('urls.show');
 
-    $app->post('/urls/{id}/checks', function (Request $request, Response $response, $args) {
-        $pdo = $this->get('pdo');
+    $app->post('/urls/{id}/checks', function (Request $request, Response $response, $args) use ($container) {
+        $pdo = $container->get('pdo');
         $id = $args['id'];
-        $flash = $this->get('flash');
+        $flash = $container->get('flash');
         $messages = $flash->getMessages();
         $flashData = $messages['flash'][0] ?? null;
 
@@ -79,7 +84,6 @@ return function (App $app) {
             $html = $res->getBody()->getContents();
 
             $doc = new Document($html);
-
             $title = $doc->first('title')?->text() ?? null;
             $h1 = $doc->first('h1')?->text() ?? null;
             $description = $doc->first('meta[name=description]')?->getAttribute('content') ?? null;
@@ -107,9 +111,8 @@ return function (App $app) {
         return $response->withHeader('Location', $path)->withStatus(302);
     })->setName('urls.check');
 
-    $app->get('/urls', function (Request $request, Response $response) {
-        $pdo = $this->get('pdo');
-
+    $app->get('/urls', function (Request $request, Response $response) use ($container) {
+        $pdo = $container->get('pdo');
         $urlsStmt = $pdo->query('SELECT * FROM urls ORDER BY id DESC');
         $urls = $urlsStmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -147,15 +150,15 @@ return function (App $app) {
             }
         }
 
-        return $this->get('renderer')->render($response, 'urls/index.phtml', [
+        return $container->get('renderer')->render($response, 'urls/index.phtml', [
             'urls' => $urls,
         ]);
     })->setName('urls.index');
 
-    $app->post('/urls', function (Request $request, Response $response) {
-        $pdo = $this->get('pdo');
-        $renderer = $this->get('renderer');
-        $flash = $this->get('flash');
+    $app->post('/urls', function (Request $request, Response $response) use ($container) {
+        $pdo = $container->get('pdo');
+        $flash = $container->get('flash');
+        $renderer = $container->get('renderer');
         $messages = $flash->getMessages();
         $flashData = $messages['flash'][0] ?? null;
 
@@ -173,8 +176,6 @@ return function (App $app) {
         $v->rule('lengthMax', 'name', 255)->message('URL не должен превышать 255 символов');
 
         if (!$v->validate()) {
-            $flash = $this->get('flash');
-
             $flash->addMessage('errors', $v->errors());
             $flash->addMessage('old', $data);
             $path = $routeParser->urlFor('home');
