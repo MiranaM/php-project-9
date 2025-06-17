@@ -1,3 +1,6 @@
+<?php
+ob_start();
+?>
 <?php if (!empty($flash)): ?>
 <div class="alert alert-<?= htmlspecialchars($flash['type']) ?>">
     <?= htmlspecialchars($flash['message']) ?>
@@ -51,3 +54,7 @@
         <?php endforeach ?>
     </tbody>
 </table>
+<?php
+$content = ob_get_clean();
+include __DIR__ . '/../layout.phtml';
+?>
